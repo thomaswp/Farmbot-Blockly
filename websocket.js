@@ -1,10 +1,10 @@
 var socket = new WebSocket("ws://127.0.0.1:8000");
 
 var Commands = {};
-var Targets = {};
+var Interpreters = {};
 
 socket.onopen = function (event) {
-    socket.send('Testing!');
+    
 };
 
 socket.onmessage = function (event) {
@@ -34,23 +34,26 @@ window.onbeforeunload = function(){
 }
 
 Commands['SetTarget'] = (data) => {
-    var id = data.targetID;
-    
+    // TODO: load code for target
+    Target.getTarget(data.targetID, data.targetName, data.code);
+    Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), demoWorkspace);
 };
 
 Commands['TriggerEvent'] = (data) => {
-    let blocks = demoWorkspace.getBlocksByType(data.name);
-    blocks.forEach(block => {
-        let code = Blockly.JavaScript.blockToCode(block);
-        console.log('Running:', code);
-        myInterpreter = new Interpreter(code, initApi);
-        myInterpreter.run();
-        console.log(block);
-    });
+    Target.getTarget(data.targetID).trigger(data.eventName);
+};
+
+Commands['BlockFinished'] = (data) => {
+    Target.getTarget(data.targetID).blockCallback(data.threadID, data.returnValue);
 };
 
 Commands['DefineBlocks'] = (data) => {
     console.log(data);
+    
+    Blockly.JavaScript.addReservedWords('call_block');
+    Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+    Blockly.JavaScript.addReservedWords('highlightBlock');
+    
     let categories = {};
     data.methods.forEach(blockDef => {
      
@@ -110,8 +113,6 @@ Commands['DefineBlocks'] = (data) => {
     var toolbox = document.getElementById('toolbox');
     toolbox.innerHTML += xml;
     initBlockly();
-    Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'),
-                               demoWorkspace);
     // console.log(toolbox.innerHTML);
     // Blockly.updateToolbox(toolbox);  
  }
