@@ -27,8 +27,6 @@ socket.onmessage = function (event) {
     }
 }
 
-console.log("!");
-
 window.onbeforeunload = function(){
     socket.send("Disconnect");
 }
@@ -48,71 +46,8 @@ Commands['BlockFinished'] = (data) => {
 };
 
 Commands['DefineBlocks'] = (data) => {
-    console.log(data);
-    
-    Blockly.JavaScript.addReservedWords('call_block');
-    Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-    Blockly.JavaScript.addReservedWords('highlightBlock');
-    
-    let categories = {};
-    data.methods.forEach(blockDef => {
-     
-        Blockly.Blocks[blockDef.name] = {
-            init: function() {
-                this.appendDummyInput()
-                .appendField(blockDef.name);
-                blockDef.parameters.forEach(param => {
-                    // this.appendDummyInput()
-                    if (param.type.isEnum) {
-                        let dropdown = [];
-                        param.type.options.forEach(option => dropdown.push([option, option]));
-                        this.appendDummyInput()
-                            .appendField(param.name + ":")
-                            .appendField(new Blockly.FieldDropdown(dropdown), param.name);
-                    } else {
-                        this.appendValueInput(param.name)
-                            .appendField(param.name + ":");
-                    }
-                });
-                
-                if (blockDef.returnType) {
-                    // TODO: Add type
-                    this.setOutput(true);
-                } else if (blockDef.isEvent) {
-                    this.setPreviousStatement(false);
-                    this.setNextStatement(true);
-                } else {
-                    this.setPreviousStatement(true);
-                    this.setNextStatement(true);
-                }
-                // TODO: Base on category
-                this.setColour(290);
-                this.setTooltip('');
-            }
-        };
-        Blockly.JavaScript[blockDef.name] = function(block) {
-            // console.log('Defining: ', block);
-            return `call_block('${blockDef.name}');\n`;
-        };
-                
-        if (!(blockDef.category in categories)) {
-            categories[blockDef.category] = [];
-        }
-        categories[blockDef.category].push(blockDef.name);
-    });
-
-    console.log('Categories: ', categories);
-    let xml = '';
-    data.categories.forEach(category => {
-        xml += `<category name="${category.name}" colour="${category.color}">`;
-        categories[category.name].forEach(block => {
-            xml += '<block type="' + block + '"></block>';
-        });
-        xml += '</category>';
-    });
-    var toolbox = document.getElementById('toolbox');
-    toolbox.innerHTML += xml;
-    initBlockly();
-    // console.log(toolbox.innerHTML);
-    // Blockly.updateToolbox(toolbox);  
- }
+    if (!window.blocklyConstructor) {
+        window.blocklyConstructor = new BlocklyConstructor();
+    }
+    window.blocklyConstructor.defineBlocks(data);
+};

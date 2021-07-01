@@ -1,9 +1,13 @@
 class Thread {
     
-    constructor(target) {
+    constructor(target, triggeringBlock) {
         this.target = target;
         this.interpreter = null;
         this.callback = null;
+        if (triggeringBlock) {
+            this.triggeringEvent = triggeringBlock.type;
+            this.triggeringBlockID = triggeringBlock.id;
+        }
         this.id = Thread.uuidv4();
     }
 
@@ -45,7 +49,7 @@ class Thread {
                   // TODO: handle arguments
                   socket.send(JSON.stringify({
                       methodName: name,
-                      target: thread.interpreter.target,
+                      targetID: thread.target.id,
                       threadID: thread.id,
                   }));
                   thread.callback = callback;
