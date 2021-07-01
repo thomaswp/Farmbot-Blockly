@@ -30,11 +30,13 @@ class Target {
             });
         }
 
+        // TODO: Get blocks from this target's workspace, not the editing one
         let blocks = demoWorkspace.getBlocksByType(name);
         blocks.forEach(block => {
             // Skip already running event blocks
             if (runningBlocks.includes(block.id)) return;
 
+            Blockly.JavaScript.init(window.demoWorkspace);
             let code = Blockly.JavaScript.blockToCode(block);
             
             let thread = new Thread(this, block);
