@@ -28,9 +28,11 @@ class BlocklyConstructor {
         });
     
         this.defineCategories(data);
-        initBlockly();
-        // console.log(toolbox.innerHTML);
-        // Blockly.updateToolbox(toolbox);  
+        
+        window.mainWorkspace = Blockly.inject('blocklyDiv', {
+            media: 'https://unpkg.com/blockly/media/',
+            toolbox: document.getElementById('toolbox')
+        });
     }
 
     getCategoryColors(data) {

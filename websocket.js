@@ -32,9 +32,10 @@ window.onbeforeunload = function(){
 }
 
 Commands['SetTarget'] = (data) => {
-    // TODO: load code for target
-    Target.getTarget(data.targetID, data.targetName, data.code);
-    Blockly.Xml.domToWorkspace(document.getElementById('startBlocks'), demoWorkspace);
+    if (Target.currentEditing) {
+        Target.currentEditing.unsetAsEditing();
+    }
+    Target.getTarget(data.targetID, data.targetName, data.code).setAsEditing();
 };
 
 Commands['TriggerEvent'] = (data) => {
