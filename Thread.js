@@ -44,16 +44,16 @@ class Thread {
         let thread = this;
         function initApi(interpreter, globalObject) {      
             interpreter.setProperty(globalObject, 'call_block',
-                interpreter.createAsyncFunction(function(name, callback) {
-                  console.log('Calling: ', name);
-                  // TODO: handle arguments
-                  socket.send(JSON.stringify({
-                      methodName: name,
-                      targetID: thread.target.id,
-                      threadID: thread.id,
-                  }));
-                  thread.callback = callback;
-                // setTimeout(callback, 1000);
+                interpreter.createAsyncFunction(function(name, argsJSON, callback) {
+                    const args = JSON.parse(argsJSON);
+                    // console.log('Calling: ', name, args);
+                    Thread.callBlock({
+                        methodName: name,
+                        args: args,
+                        targetID: thread.target.id,
+                        threadID: thread.id,
+                    });
+                    thread.callback = callback;
             }));
       
             // Add an API function for highlighting blocks.
@@ -68,5 +68,14 @@ class Thread {
         this.interpreter = new Interpreter(code, initApi);
         // TODO: Should step so its interruptable
         this.step();
+    }
+
+    static callBlock(data) {
+        console.log('Calling', data);
+        socket.send(JSON.stringify({
+            'type': 'call',
+            'data': data,
+        }));
+
     }
 }

@@ -9,7 +9,11 @@ class Target {
 
     static getTarget(id, name, code) {
         let target = this.targets[id];
-        if (target) return target;
+        if (target) {
+            if (code) target.code = Blockly.Xml.textToDom(code);
+            if (name) target.name = name;
+            return target;
+        }
         
         this.targets[id] = new Target(id, name, code);
         return this.targets[id];
@@ -42,6 +46,15 @@ class Target {
         this.code = Blockly.Xml.workspaceToDom(window.mainWorkspace);
         this.workspace.clear();
         Blockly.Xml.domToWorkspace(this.code, this.workspace);
+        const data = {
+            'type': 'save',
+            'data': {
+                targetID: this.id,
+                code: this.code ? this.code.outerHTML : null,
+            },
+        };
+        console.log('saving', data);
+        socket.send(JSON.stringify(data));
     }
 
     setAsEditing() {

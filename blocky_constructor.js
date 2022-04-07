@@ -96,8 +96,17 @@ class BlocklyConstructor {
             }
         };
         Blockly.JavaScript[blockDef.name] = function(block) {
+            const args = [];
+            if (blockDef.parameters) {
+                blockDef.parameters.forEach(param => {
+                    const value = block.getFieldValue(param.name);
+                    console.log('Adding arg', param.name, value);
+                    args.push(value);
+                });
+            }
+            const escaped = JSON.stringify(args).replace("'", "\\'");
             // console.log('Defining: ', block);
-            return `call_block('${blockDef.name}');\n`;
+            return `call_block('${blockDef.name}', '${escaped}');\n`;
         };
                 
         if (!(blockDef.category in this.categories)) {
