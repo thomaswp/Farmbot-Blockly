@@ -19,6 +19,12 @@ class Target {
         return this.targets[id];
     }
 
+    static reset() {
+        if (this.currentEditing) this.currentEditing.unsetAsEditing();
+        this.targets = {};
+        this.currentEditing = null;
+    }
+
     constructor(id, name, code) {
         this.id = id;
         this.name = name;
@@ -31,17 +37,30 @@ class Target {
 
         this.threads = {};
         this.isEditing = false;
+        this.updateListener = event => this.onUpdate(event);
+        this.saveCallback = null;
 
         this.workspace = new Blockly.Workspace();
         Blockly.Xml.domToWorkspace(this.code, this.workspace);
     }
 
+    onUpdate(event) {
+        this.saveCodeDelayed();
+    }
+
     unsetAsEditing() {
         this.saveCode();
         this.isEditing = false;
+        window.mainWorkspace.removeChangeListener(this.updateListener);
+    }
+
+    saveCodeDelayed() {
+        clearTimeout(this.saveCallback);
+        this.saveCallback = setTimeout(() => this.saveCode(), 2000);
     }
 
     saveCode() {
+        clearTimeout(this.saveCallback);
         if (!this.isEditing) return;
         this.code = Blockly.Xml.workspaceToDom(window.mainWorkspace);
         this.workspace.clear();
@@ -53,15 +72,17 @@ class Target {
                 code: this.code ? this.code.outerHTML : null,
             },
         };
-        console.log('saving', data);
-        socket.send(JSON.stringify(data));
+        // console.log('saving', data);
+        window.socket.send(JSON.stringify(data));
     }
 
     setAsEditing() {
         this.isEditing = true;
         Target.currentEditing = this;
         window.mainWorkspace.clear();
-        Blockly.Xml.domToWorkspace(this.code, window.mainWorkspace)
+        Blockly.Xml.domToWorkspace(this.code, window.mainWorkspace);
+
+        window.mainWorkspace.addChangeListener(this.updateListener);
     }
 
     trigger(name) {
@@ -79,9 +100,9 @@ class Target {
 
         Blockly.JavaScript.init(this.workspace);
         let blocks = this.workspace.getBlocksByType(name);
-        console.log(this.isEditing);
-        console.log(blocks);
-        console.log(Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)));
+        // console.log(this.isEditing);
+        // console.log(blocks);
+        // console.log(Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)));
         blocks.forEach(block => {
             // Skip already running event blocks
             if (runningBlocks.includes(block.id)) return;

@@ -24,6 +24,7 @@ class Thread {
             return;
         }
 
+        // highlightBlock(null);
         this.callback(returnValue);
         this.callback = null;
         this.step();
@@ -72,7 +73,7 @@ class Thread {
 
     static callBlock(data) {
         console.log('Calling', data);
-        socket.send(JSON.stringify({
+        window.socket.send(JSON.stringify({
             'type': 'call',
             'data': data,
         }));

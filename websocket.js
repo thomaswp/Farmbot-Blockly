@@ -1,34 +1,49 @@
-var socket = new WebSocket("ws://127.0.0.1:8000");
-
 var Commands = {};
 var Interpreters = {};
 
-socket.onopen = function (event) {
+function createWebsocket() {
+    var socket = new WebSocket("ws://127.0.0.1:8000");
+
+    socket.onopen = function (event) {
+        
+    };
     
-};
-
-socket.onmessage = function (event) {
-    console.log(event.data);
-
-    let message = event.data;
-    if (message.length < 2 || message[0] !== '{' || message[message.length - 1] != '}') {
-        console.log(message);
-    }
-
-    try {
-        let command = JSON.parse(message);
-        if (Commands[command.type]) {
-            Commands[command.type](command.data);
-        } else {
-            console.log("Unknown comamnd: " + command.type);
+    socket.onmessage = function (event) {
+        console.log(event.data);
+    
+        let message = event.data;
+        if (message.length < 2 || message[0] !== '{' || message[message.length - 1] != '}') {
+            console.log(message);
         }
-    } catch (e) {
-        console.log(e);
+    
+        try {
+            let command = JSON.parse(message);
+            if (Commands[command.type]) {
+                Commands[command.type](command.data);
+            } else {
+                console.log("Unknown comamnd: " + command.type);
+            }
+        } catch (e) {
+            console.log(e);
+        }
     }
+    
+    socket.onclose = function(event) {
+        Target.reset();
+        // setTimeout(() => {
+        //     console.log('Retrying');
+        //     window.socket = createWebsocket();
+        // }, 5000);
+    }
+    
+    return socket;
 }
 
-window.onbeforeunload = function(){
-    socket.send("Disconnect");
+window.socket = createWebsocket();
+
+window.onbeforeunload = function() {
+    if (!window) return;
+    window.socket.send("Disconnect");
 }
 
 Commands['SetTarget'] = (data) => {

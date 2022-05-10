@@ -15,6 +15,7 @@ class BlocklyConstructor {
     
         Blockly.JavaScript.addReservedWords('call_block');
         Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+        Blockly.JavaScript.STATEMENT_SUFFIX = 'highlightBlock(null);\n';
         Blockly.JavaScript.addReservedWords('highlightBlock');
         
         this.getCategoryColors(data);
