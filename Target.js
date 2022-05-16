@@ -15,7 +15,7 @@ class Target {
             return target;
         }
         
-        this.targets[id] = new Target(id, name, code);
+        this.targets[id] = new Target(id, name, code, varMap);
         return this.targets[id];
     }
 
@@ -37,7 +37,9 @@ class Target {
 
         if (varMap) {
             try {
+                // console.log('setting varMap', varMap);
                 this.varMap = new Map(Object.entries(JSON.parse(varMap)));
+                // console.log('success', this.varMap);
             } catch {
                 console.warn("Failed to init var map with", varMap);
             }
@@ -91,8 +93,8 @@ class Target {
             'data': {
                 targetID: this.id,
                 code: this.code ? this.code.outerHTML : null,
+                varMap: JSON.stringify(Object.fromEntries(this.varMap)),
             },
-            'varMap': JSON.stringify(Object.fromEntries(this.varMap)),
         };
         // console.log('saving', data);
         window.socket.send(JSON.stringify(data));

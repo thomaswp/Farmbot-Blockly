@@ -57,7 +57,7 @@ Commands['SyncCode'] = (data) => {
     console.log('sync', data);
     data.forEach(robot => {
         // console.log(robot.Guid, robot.Code);
-        Target.getTarget(robot.Guid, null, robot.Code);
+        Target.getTarget(robot.Guid, null, robot.Code, robot.VarMap);
     });
     // Target.getTarget(data.targetID, data.targetName, data.code)
 };
