@@ -44,7 +44,20 @@ class Thread {
     run(code) {
         let thread = this;
         function initApi(interpreter, globalObject) {      
-            interpreter.setProperty(globalObject, 'call_block',
+            interpreter.setProperty(globalObject, BlocklyConstructor.GET_VAR,
+                interpreter.createNativeFunction(function(name) {
+                    return thread.target.getVar(name);
+                }
+            ));
+
+            interpreter.setProperty(globalObject, BlocklyConstructor.SET_VAR,
+                // TODO: This won't work with non-primitives,, e.g. lists...
+                interpreter.createNativeFunction(function(name, value) {
+                    thread.target.setVar(name, value);
+                }
+            ));
+
+            interpreter.setProperty(globalObject, BlocklyConstructor.CALL_BLOCK,
                 interpreter.createAsyncFunction(function(
                         // Silly hack to allow any number of arguments to be passed to the same function
                         name, nArgs,
@@ -62,14 +75,15 @@ class Thread {
                         threadID: thread.id,
                     });
                     thread.callback = callback;
-            }));
+                }
+            ));
       
             // Add an API function for highlighting blocks.
             var wrapper = function(id) {
               id = String(id || '');
-              return interpreter.createPrimitive(highlightBlock(id));
+              highlightBlock(id);
             };
-            interpreter.setProperty(globalObject, 'highlightBlock',
+            interpreter.setProperty(globalObject, BlocklyConstructor.HIGHLIGHT,
                 interpreter.createNativeFunction(wrapper));
         }
         

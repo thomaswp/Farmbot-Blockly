@@ -14,15 +14,15 @@
  CustomDialog = {};
 
  /** Override Blockly.alert() with custom implementation. */
- Blockly.alert = function(message, callback) {
+ Blockly.dialog.setAlert(function(message, callback) {
    console.log('Alert: ' + message);
    CustomDialog.show('Alert', message, {
      onCancel: callback
    });
- };
+ });
  
  /** Override Blockly.confirm() with custom implementation. */
- Blockly.confirm = function(message, callback) {
+ Blockly.dialog.setConfirm(function(message, callback) {
    console.log('Confirm: ' + message);
    CustomDialog.show('Confirm', message, {
      showOkay: true,
@@ -34,10 +34,10 @@
        callback(false);
      }
    });
- };
+ });
  
  /** Override Blockly.prompt() with custom implementation. */
- Blockly.prompt = function(message, defaultValue, callback) {
+ Blockly.dialog.setPrompt(function(message, defaultValue, callback) {
    console.log('Prompt: ' + message);
    CustomDialog.show('Prompt', message, {
      showInput: true,
@@ -51,15 +51,15 @@
      }
    });
    CustomDialog.inputField.value = defaultValue;
- };
+ });
  
  /** Hides any currently visible dialog. */
- CustomDialog.hide = function() {
-   if (CustomDialog.backdropDiv_) {
-     CustomDialog.backdropDiv_.style.display = 'none';
-     CustomDialog.dialogDiv_.style.display = 'none';
-   }
- };
+//  CustomDialog.dialog.setHide(function() {
+//    if (CustomDialog.backdropDiv_) {
+//      CustomDialog.backdropDiv_.style.display = 'none';
+//      CustomDialog.dialogDiv_.style.display = 'none';
+//    }
+//  });
  
  /**
   * Shows the dialog.

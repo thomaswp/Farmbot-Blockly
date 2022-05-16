@@ -50,7 +50,7 @@ Commands['SetTarget'] = (data) => {
     if (Target.currentEditing) {
         Target.currentEditing.unsetAsEditing();
     }
-    Target.getTarget(data.targetID, data.targetName, data.code).setAsEditing();
+    Target.getTarget(data.targetID, data.targetName, data.code, data.varMap).setAsEditing();
 };
 
 Commands['SyncCode'] = (data) => {

@@ -7,7 +7,7 @@ class Target {
     static targets = {};
     static currentEditing = null;
 
-    static getTarget(id, name, code) {
+    static getTarget(id, name, code, varMap) {
         let target = this.targets[id];
         if (target) {
             if (code) target.code = Blockly.Xml.textToDom(code);
@@ -25,7 +25,7 @@ class Target {
         this.currentEditing = null;
     }
 
-    constructor(id, name, code) {
+    constructor(id, name, code, varMap) {
         this.id = id;
         this.name = name;
         
@@ -35,6 +35,17 @@ class Target {
             this.code = document.getElementById('startBlocks');
         }
 
+        if (varMap) {
+            try {
+                this.varMap = new Map(Object.entries(JSON.parse(varMap)));
+            } catch {
+                console.warn("Failed to init var map with", varMap);
+            }
+        } 
+        if (!varMap) {
+            this.varMap = new Map();
+        }
+
         this.threads = {};
         this.isEditing = false;
         this.updateListener = event => this.onUpdate(event);
@@ -42,6 +53,16 @@ class Target {
 
         this.workspace = new Blockly.Workspace();
         Blockly.Xml.domToWorkspace(this.code, this.workspace);
+    }
+
+    getVar(name) {
+        console.log(`Getting ${name} for ${this.name}: ${this.varMap.get(name)}`);
+        return this.varMap.get(name) | null;
+    }
+
+    setVar(name, value) {
+        console.log(`Setting ${name} for ${this.name} to: ${value}`);
+        this.varMap.set(name, value);
     }
 
     onUpdate(event) {
@@ -71,6 +92,7 @@ class Target {
                 targetID: this.id,
                 code: this.code ? this.code.outerHTML : null,
             },
+            'varMap': JSON.stringify(Object.fromEntries(this.varMap)),
         };
         // console.log('saving', data);
         window.socket.send(JSON.stringify(data));
@@ -118,6 +140,7 @@ class Target {
             // Skip already running event blocks
             if (runningBlocks.includes(block.id)) return;
             Blockly.JavaScript.init(this.workspace);
+            // console.log(Blockly.JavaScript.nameDB_, Blockly.JavaScript.definitions_);
             let  code = Blockly.JavaScript.blockToCode(block);
             // Call blockToCode on each procedure and then finish to generate their code
             // Note that blockToCode generates no code on call, but it adds procedures to the DB

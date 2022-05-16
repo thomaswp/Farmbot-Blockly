@@ -1,5 +1,10 @@
 class BlocklyConstructor {
 
+    static GET_VAR = 'get_variable';
+    static SET_VAR = 'set_variable';
+    static CALL_BLOCK = 'call_block';
+    static HIGHLIGHT = 'highlightBlock';
+
     constructor() {
         this.categories = {};
         this.categoryColors = {};
@@ -13,10 +18,10 @@ class BlocklyConstructor {
     defineBlocks(data) {
         console.log(data);
     
-        Blockly.JavaScript.addReservedWords('call_block');
-        Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-        Blockly.JavaScript.STATEMENT_SUFFIX = 'highlightBlock(null);\n';
-        Blockly.JavaScript.addReservedWords('highlightBlock');
+        Blockly.JavaScript.addReservedWords(BlocklyConstructor.CALL_BLOCK);
+        Blockly.JavaScript.addReservedWords(BlocklyConstructor.HIGHLIGHT);
+        Blockly.JavaScript.STATEMENT_PREFIX = BlocklyConstructor.HIGHLIGHT  + '(%1);\n';
+        Blockly.JavaScript.STATEMENT_SUFFIX = BlocklyConstructor.HIGHLIGHT + '(null);\n';
         
         this.getCategoryColors(data);
 
@@ -27,6 +32,8 @@ class BlocklyConstructor {
         data.events.forEach(eventDef => {
             this.defineBlock(eventDef, true);    
         });
+
+        this.defineVariables();
     
         this.defineCategories(data);
         
@@ -78,6 +85,44 @@ class BlocklyConstructor {
         }
     }
 
+    defineVariables() {
+        Blockly.JavaScript.addReservedWords(BlocklyConstructor.GET_VAR);
+        Blockly.JavaScript.addReservedWords(BlocklyConstructor.SET_VAR);
+
+        Blockly.JavaScript['variables_get'] = function(block) {
+            // Variable getter.
+            const name = Blockly.JavaScript.nameDB_.getName(block.getFieldValue('VAR'),
+                Blockly.Names.NameType.VARIABLE);
+            const code = `${BlocklyConstructor.GET_VAR}("${name}")`;
+            return [code, Blockly.JavaScript.ORDER_ATOMIC];
+        };
+        
+        Blockly.JavaScript['variables_set'] = function(block) {
+            // Variable setter.
+            const argument0 = Blockly.JavaScript.valueToCode(
+                                    block, 'VALUE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+            const varName = Blockly.JavaScript.nameDB_.getName(
+                block.getFieldValue('VAR'), Blockly.Names.NameType.VARIABLE);
+            const code = `${BlocklyConstructor.SET_VAR}("${varName}", ${argument0});\n`;
+            return code;
+        };
+
+        Blockly.JavaScript['math_change'] = function(block) {
+            // Add to a variable in place.
+            const argument0 = Blockly.JavaScript.valueToCode(block, 'DELTA',
+            Blockly.JavaScript.ORDER_ADDITION) || '0';
+            const varName = Blockly.JavaScript.nameDB_.getName(
+                block.getFieldValue('VAR'), Blockly.Names.NameType.VARIABLE);
+            return `${BlocklyConstructor.SET_VAR}("${varName}", ` + '(typeof ' + 
+            `${BlocklyConstructor.GET_VAR}("${varName}")` + 
+                ' === \'number\' ? ' + `${BlocklyConstructor.GET_VAR}("${varName}")` +
+                ' : 0) + ' + argument0 + ');\n';
+        };
+
+        Blockly.JavaScript['variables_get_dynamic'] = Blockly.JavaScript['variables_get'];
+        Blockly.JavaScript['variables_set_dynamic'] = Blockly.JavaScript['variables_set'];
+    }
+
     defineBlock(blockDef, isEvent) {
         var constructor = this;
         Blockly.Blocks[blockDef.name] = {
@@ -124,7 +169,7 @@ class BlocklyConstructor {
             // const args = [];
             
             const nArgs = blockDef.parameters ? blockDef.parameters.length : 0;
-            let code = `call_block('${blockDef.name}', ${nArgs}`;
+            let code = `${BlocklyConstructor.CALL_BLOCK}('${blockDef.name}', ${nArgs}`;
             if (blockDef.parameters) {
                 blockDef.parameters.forEach(param => {
                     let value;
@@ -134,7 +179,7 @@ class BlocklyConstructor {
                         // TODO: Handle default values
                         value = Blockly.JavaScript.valueToCode(block, param.name, Blockly.JavaScript.ORDER_NONE) || 'null';
                     }
-                    console.log('Adding arg', param.name, value);
+                    // console.log('Adding arg', param.name, value);
                     // args.push(value);
                     code += ", " + value;
                 });
