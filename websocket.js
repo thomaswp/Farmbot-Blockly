@@ -24,7 +24,7 @@ function createWebsocket() {
                 console.log("Unknown comamnd: " + command.type);
             }
         } catch (e) {
-            console.log(e);
+            console.log(e, message);
         }
     }
     
@@ -67,6 +67,7 @@ Commands['TriggerEvent'] = (data) => {
 };
 
 Commands['BlockFinished'] = (data) => {
+    // console.log('BlockFinished', data);
     Target.getTarget(data.targetID).blockCallback(data.threadID, data.returnValue);
 };
 

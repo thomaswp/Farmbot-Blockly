@@ -56,6 +56,28 @@ class BlocklyConstructor {
         toolbox.innerHTML += xml;
     }
 
+    static convertType(type) {
+        switch (type) {
+            case "Boolean": return "Boolean";
+            // TODO: Some of these may need casting on return...
+            case "Byte":
+            case "SByte":
+            case "Decimal":
+            case "Double":
+            case "Single":
+            case "Int32":
+            case "UInt32":
+            case "IntPtr":
+            case "UIntPtr":
+            case "Int64":
+            case "UInt64":
+            case "Int16":
+            case "UInt16": return "Number";
+            case "Char":
+            case "String": return "String";
+        }
+    }
+
     defineBlock(blockDef, isEvent) {
         var constructor = this;
         Blockly.Blocks[blockDef.name] = {
@@ -73,6 +95,7 @@ class BlocklyConstructor {
                                 .appendField(new Blockly.FieldDropdown(dropdown), param.name);
                         } else {
                             this.appendValueInput(param.name)
+                                .setCheck(BlocklyConstructor.convertType(param.type.type))
                                 .appendField(param.name + ":");
                         }
                     });
@@ -80,7 +103,7 @@ class BlocklyConstructor {
                 
                 if (blockDef.returnType) {
                     // TODO: Add type
-                    this.setOutput(true);
+                    this.setOutput(true, BlocklyConstructor.convertType(blockDef.returnType));
                 } else if (isEvent) {
                     this.setPreviousStatement(false);
                     this.setNextStatement(true);
@@ -97,17 +120,34 @@ class BlocklyConstructor {
             }
         };
         Blockly.JavaScript[blockDef.name] = function(block) {
-            const args = [];
+            // console.log(block);
+            // const args = [];
+            
+            const nArgs = blockDef.parameters ? blockDef.parameters.length : 0;
+            let code = `call_block('${blockDef.name}', ${nArgs}`;
             if (blockDef.parameters) {
                 blockDef.parameters.forEach(param => {
-                    const value = block.getFieldValue(param.name);
+                    let value;
+                    if (param.type.isEnum) {
+                        value = block.getFieldValue(param.name);
+                    } else {
+                        // TODO: Handle default values
+                        value = Blockly.JavaScript.valueToCode(block, param.name, Blockly.JavaScript.ORDER_NONE) || 'null';
+                    }
                     console.log('Adding arg', param.name, value);
-                    args.push(value);
+                    // args.push(value);
+                    code += ", " + value;
                 });
             }
-            const escaped = JSON.stringify(args).replace("'", "\\'");
+            code += ")";
+
+            // const escaped = JSON.stringify(args).replace("'", "\\'");
             // console.log('Defining: ', block);
-            return `call_block('${blockDef.name}', '${escaped}');\n`;
+
+            if (blockDef.returnType) {
+                return [code, Blockly.JavaScript.ORDER_NONE];
+            }
+            return code + ';\n';
         };
                 
         if (!(blockDef.category in this.categories)) {

@@ -98,15 +98,31 @@ class Target {
             });
         }
 
-        Blockly.JavaScript.init(this.workspace);
-        let blocks = this.workspace.getBlocksByType(name);
         // console.log(this.isEditing);
         // console.log(blocks);
         // console.log(Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)));
+
+        // console.log(Blockly.JavaScript.workspaceToCode(this.workspace));
+
+        // Collect all custom block definitions so we can add them to each thread we create
+        let customBlocks = [];
+        Blockly.Procedures.allProcedures(this.workspace).forEach(blocks => {
+            blocks.forEach(block => {
+                const procBlock = Blockly.Procedures.getDefinition(block[0], this.workspace);
+                customBlocks.push(procBlock);
+            });
+        });
+        
+        let blocks = this.workspace.getBlocksByType(name);
         blocks.forEach(block => {
             // Skip already running event blocks
             if (runningBlocks.includes(block.id)) return;
-            let code = Blockly.JavaScript.blockToCode(block);
+            Blockly.JavaScript.init(this.workspace);
+            let  code = Blockly.JavaScript.blockToCode(block);
+            // Call blockToCode on each procedure and then finish to generate their code
+            // Note that blockToCode generates no code on call, but it adds procedures to the DB
+            customBlocks.forEach(proc => Blockly.JavaScript.blockToCode(proc));
+            code = Blockly.JavaScript.finish(code)
             
             let thread = new Thread(this, block);
             console.log(`Running ${code} on thread ${thread.id}`);

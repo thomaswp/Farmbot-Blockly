@@ -24,7 +24,7 @@ class Thread {
             return;
         }
 
-        // highlightBlock(null);
+        console.log("Callback with return: ", returnValue);
         this.callback(returnValue);
         this.callback = null;
         this.step();
@@ -45,9 +45,16 @@ class Thread {
         let thread = this;
         function initApi(interpreter, globalObject) {      
             interpreter.setProperty(globalObject, 'call_block',
-                interpreter.createAsyncFunction(function(name, argsJSON, callback) {
-                    const args = JSON.parse(argsJSON);
-                    // console.log('Calling: ', name, args);
+                interpreter.createAsyncFunction(function(
+                        // Silly hack to allow any number of arguments to be passed to the same function
+                        name, nArgs,
+                        a2, a3, a4, a5, a6, a7, a8, a9, a10, 
+                        a11, a12, a13, a14, a15, 
+                        callback
+                    ) {
+                    console.log('args', arguments);
+                    var args = [...arguments].slice(2, nArgs + 2);
+                    console.log('Calling: ', name, args);
                     Thread.callBlock({
                         methodName: name,
                         args: args,
