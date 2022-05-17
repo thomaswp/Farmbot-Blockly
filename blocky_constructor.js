@@ -20,8 +20,8 @@ class BlocklyConstructor {
     
         Blockly.JavaScript.addReservedWords(BlocklyConstructor.CALL_BLOCK);
         Blockly.JavaScript.addReservedWords(BlocklyConstructor.HIGHLIGHT);
-        Blockly.JavaScript.STATEMENT_PREFIX = BlocklyConstructor.HIGHLIGHT  + '(%1);\n';
-        Blockly.JavaScript.STATEMENT_SUFFIX = BlocklyConstructor.HIGHLIGHT + '(null);\n';
+        // Blockly.JavaScript.STATEMENT_PREFIX = BlocklyConstructor.HIGHLIGHT  + '(%1);\n';
+        // Blockly.JavaScript.STATEMENT_SUFFIX = BlocklyConstructor.HIGHLIGHT + '(null);\n';
         
         this.getCategoryColors(data);
 
@@ -192,7 +192,7 @@ class BlocklyConstructor {
             // const args = [];
             
             const nArgs = blockDef.parameters ? blockDef.parameters.length : 0;
-            let code = `${BlocklyConstructor.CALL_BLOCK}('${blockDef.name}', ${nArgs}`;
+            let code = `${BlocklyConstructor.CALL_BLOCK}('${blockDef.name}', '${block.id}', ${nArgs}`;
             if (blockDef.parameters) {
                 blockDef.parameters.forEach(param => {
                     let value;
