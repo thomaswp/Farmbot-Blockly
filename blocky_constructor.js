@@ -197,7 +197,7 @@ class BlocklyConstructor {
                 blockDef.parameters.forEach(param => {
                     let value;
                     if (param.type.isEnum) {
-                        value = block.getFieldValue(param.name);
+                        value = "'" + block.getFieldValue(param.name) + "'";
                     } else {
                         // TODO: Handle default values
                         value = Blockly.JavaScript.valueToCode(block, param.name, Blockly.JavaScript.ORDER_NONE) || 'null';
