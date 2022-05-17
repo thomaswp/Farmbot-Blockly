@@ -65,7 +65,7 @@ class Thread {
                         a11, a12, a13, a14, a15, 
                         callback
                     ) {
-                    console.log('args', arguments);
+                    // console.log('args', arguments);
                     var args = [...arguments].slice(2, nArgs + 2);
                     console.log('Calling: ', name, args);
                     Thread.callBlock({

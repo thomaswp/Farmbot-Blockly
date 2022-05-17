@@ -89,20 +89,43 @@ class BlocklyConstructor {
         Blockly.JavaScript.addReservedWords(BlocklyConstructor.GET_VAR);
         Blockly.JavaScript.addReservedWords(BlocklyConstructor.SET_VAR);
 
+        function isLocalVar(block, name) {
+            console.log(Object.assign({}, Blockly.JavaScript.nameDB_));
+            console.log(block);
+            let ancestor = block;
+            while (ancestor.getParent()) ancestor = ancestor.getParent();
+            console.log('ANCESTOR', ancestor, ancestor.type);
+            if (!(ancestor.type === 'procedures_defreturn' ||ancestor.type === 'procedures_defnoreturn')) {
+                return false;
+            }
+            const vars = ancestor.getVars();
+            console.log('VARS', vars, name);
+            if (!vars.includes(name)) return false;
+            return true;
+        }
+
+        const defaultGet = Blockly.JavaScript['variables_get'];
         Blockly.JavaScript['variables_get'] = function(block) {
             // Variable getter.
-            const name = Blockly.JavaScript.nameDB_.getName(block.getFieldValue('VAR'),
+            const varName = Blockly.JavaScript.nameDB_.getName(block.getFieldValue('VAR'),
                 Blockly.Names.NameType.VARIABLE);
-            const code = `${BlocklyConstructor.GET_VAR}("${name}")`;
+            if (isLocalVar(block, varName)) {
+                return defaultGet.call(this, block);
+            }
+            const code = `${BlocklyConstructor.GET_VAR}("${varName}")`;
             return [code, Blockly.JavaScript.ORDER_ATOMIC];
         };
         
+        const defaultSet = Blockly.JavaScript['variables_set'];
         Blockly.JavaScript['variables_set'] = function(block) {
             // Variable setter.
-            const argument0 = Blockly.JavaScript.valueToCode(
-                                    block, 'VALUE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
             const varName = Blockly.JavaScript.nameDB_.getName(
                 block.getFieldValue('VAR'), Blockly.Names.NameType.VARIABLE);
+            if (isLocalVar(block, varName)) {
+                return defaultSet.call(this, block);
+            }
+            const argument0 = Blockly.JavaScript.valueToCode(
+                                    block, 'VALUE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
             const code = `${BlocklyConstructor.SET_VAR}("${varName}", ${argument0});\n`;
             return code;
         };
