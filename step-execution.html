@@ -22,11 +22,19 @@
       font-weight: normal;
       font-size: 140%;
     }
+    .test-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 8em;
+      font-size: large;
+    }
   </style>
 </head>
 <body>
   <div style="width: 100%; height: 100%">
     <div id="blocklyDiv" style="height: 100%; width: 100%"></div>
+    <button class="test-button" onclick="testCode()">Test My Code</button>
   </div>
 
   <xml id="toolbox" style="display: none">
@@ -350,5 +358,16 @@
   <script src="./thread.js"></script>
   <script src="./blocky_constructor.js"></script>
   <script src="./custom-dialog.js"></script>
+
+  <script type="text/javascript">
+    function testCode() {
+      if (!window.socket) return;
+      console.log("Test!");
+      window.socket.send(JSON.stringify({
+        type: 'test',
+        data: null,
+      }));
+    }
+  </script>
 </body>
 </html>
