@@ -22,7 +22,7 @@
       font-weight: normal;
       font-size: 140%;
     }
-    .test-button {
+    #test-button {
       position: absolute;
       top: 20px;
       right: 20px;
@@ -32,9 +32,9 @@
   </style>
 </head>
 <body>
-  <div style="width: 100%; height: 100%">
+  <div id="container" style="width: 100%; height: 100%">
     <div id="blocklyDiv" style="height: 100%; width: 100%"></div>
-    <button class="test-button" onclick="testCode()">Test My Code</button>
+    <button id="test-button" onclick="testCode()">Test My Code</button>
   </div>
 
   <xml id="toolbox" style="display: none">
@@ -367,6 +367,17 @@
         type: 'test',
         data: null,
       }));
+    }
+
+    document.onkeydown = function(e) {
+      if (!window.socket) return;
+      console.log(document.activeElement);
+      if (e.code === 'KeyX') {
+        window.socket.send(JSON.stringify({
+          type: 'minimize',
+          data: null,
+        }));
+      }
     }
   </script>
 </body>
