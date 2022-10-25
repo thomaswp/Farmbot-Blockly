@@ -37,10 +37,17 @@ class Thread {
     step() {
         console.log(`Stepping thread: ${this.id}`);
         var hasMore = this.interpreter.run();
-        if (!hasMore) this.die();
+		// if (!hasMore) this.die();
+        if (!hasMore) {
+			this.die();
+		}
     }
 
     die() {
+		let thread = this;
+		Thread.FinishedAll({
+			targetID: thread.target.id,
+		});
         this.target.removeThread(this.id);
     }
 
@@ -104,6 +111,15 @@ class Thread {
         console.log('Calling', data);
         window.socket.send(JSON.stringify({
             'type': 'call',
+            'data': data,
+        }));
+
+    }
+	
+	static FinishedAll(data) {
+        console.log('Finished All!', data);
+        window.socket.send(JSON.stringify({
+            'type': 'FinishedAll',
             'data': data,
         }));
 
